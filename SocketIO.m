@@ -355,7 +355,8 @@ NSString* const SocketIOException = @"SocketIOException";
 {
     DEBUGLOG(@"onConnect()");
     
-    _isConnected = YES;
+    // #173
+    //_isConnected = YES;
 
     // Send the connected packet so the server knows what it's dealing with.
     // Only required when endpoint/namespace is present
@@ -368,6 +369,8 @@ NSString* const SocketIOException = @"SocketIOException";
         }
     }
     
+    // #173
+    _isConnected = YES;
     _isConnecting = NO;
     
     if ([_delegate respondsToSelector:@selector(socketIODidConnect:)]) {
@@ -587,6 +590,37 @@ NSString* const SocketIOException = @"SocketIOException";
             }
             case 7: {
                 DEBUGLOG(@"error");
+                // #173
+                if (packet.data && ![packet.data isEqualToString:@""]) {
+                    if ([_delegate respondsToSelector:@selector(socketIO:onError:)]) {
+                        /**
+                         * Compare string instead of using 'integerValue' method,
+                         * since we can't tell 'SocketIOTransportsNotSupported' from the return value of 0
+                         * when packet.data doesn't begin with a valid decimal text representation of a number.
+                         */
+                        //NSInteger errorCode = [packet.data integerValue];
+                        NSInteger errorCode = -1000; // unknown error...
+                        if ([packet.data isEqualToString:@"2") {
+                          errorCode = (NSInteger)SocketIOUnauthorized;
+                        }
+                        else if ([packet.data isEqualToString:@"1"]) {
+                          errorCode = (NSInteger)SocketIOHandshakeFailed;
+                        }
+                        else if ([packet.data isEqualToString:@"0"]) {
+                          errorCode = (NSInteger)SocketIOTransportsNotSupported;
+                        }
+                        else {
+                          DEBUGLOG(@"unknown error reason in packet.data: %@", packet.data);
+                        }
+
+                        NSString* errorDescription = [NSString stringWithFormat:NSLocalizedString(@"Connection failed: error code %ld"), (long)errorCode];
+                        NSDictionary* errorInfo = [NSDictionary dictionaryWithObject:errorDescription forKey:NSLocalizedDescriptionKey];
+                        NSError* error = [NSError errorWithDomain:SocketIOError code:errorCode userInfo:errorInfo];
+
+                        [_delegate socketIO:self onError:error];
+                    }
+                }
+
                 break;
             }
             case 8: {
