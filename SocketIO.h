@@ -21,6 +21,7 @@
 #import <Foundation/Foundation.h>
 
 #import "SocketIOTransport.h"
+#import "SocketIOPacket.h"
 
 @class SocketIO;
 @class SocketIOPacket;
