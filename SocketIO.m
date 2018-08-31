@@ -600,7 +600,7 @@ NSString* const SocketIOException = @"SocketIOException";
                          */
                         //NSInteger errorCode = [packet.data integerValue];
                         NSInteger errorCode = -1000; // unknown error...
-                        if ([packet.data isEqualToString:@"2") {
+                        if ([packet.data isEqualToString:@"2"]) {
                           errorCode = (NSInteger)SocketIOUnauthorized;
                         }
                         else if ([packet.data isEqualToString:@"1"]) {
@@ -613,7 +613,7 @@ NSString* const SocketIOException = @"SocketIOException";
                           DEBUGLOG(@"unknown error reason in packet.data: %@", packet.data);
                         }
 
-                        NSString* errorDescription = [NSString stringWithFormat:NSLocalizedString(@"Connection failed: error code %ld"), (long)errorCode];
+                        NSString* errorDescription = [NSString stringWithFormat:NSLocalizedString(@"Connection failed: error code %ld", ""), (long)errorCode];
                         NSDictionary* errorInfo = [NSDictionary dictionaryWithObject:errorDescription forKey:NSLocalizedDescriptionKey];
                         NSError* error = [NSError errorWithDomain:SocketIOError code:errorCode userInfo:errorInfo];
 
